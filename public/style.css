@@ -5,7 +5,7 @@ body {
     background-color: rgb(240, 240, 240);
 }
 
-#form-container {
+#form-container, #response-div {
     text-align: center;
     height: 200px;
     font-size: 12px;
@@ -22,11 +22,15 @@ body {
 
 #file-input {
     margin-left: 30px;
-    border-radius: 10px;
+    font-size: 14px;
 }
 
 #post {
     border-radius: 10px;
     padding: 5px 15px;
     font-size: 16px;
+}
+
+.hidden {
+    display: none;
 }
