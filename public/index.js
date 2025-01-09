@@ -1,5 +1,3 @@
-import logger from "./logger.js"
-
 const responseContainer = document.getElementById("response-div");
 const scraperButton = document.getElementById("post");
 const fileInput = document.getElementById("file-input")
@@ -21,7 +19,7 @@ function displayScraped(e){
         responseContainer.classList.remove("hidden");
         responseContainer.classList.add("visible");
     }
-
+    gettingInputData();
     createScrapeHTML(fileData);
 }
 
@@ -33,7 +31,7 @@ function gettingInputData() {
             const reader = new FileReader();
 
             reader.onload = async (event) => {
-                const typedArray = new Unit8Array(event.target.result);
+                const typedArray = new Uint8Array(event.target.result);
                 const pdf = await pdfjsLib.getDocument(typedArray).promise;
 
                 let extractedText = "";
@@ -42,7 +40,6 @@ function gettingInputData() {
                     const textContent = await page.getTextContent();
                     textContent.items.forEach(item => extractedText += item.str + " ");
                 }
-
                 if (extractedText.trim().length > 0) {
                     sendToServer({ text: extractedText });
                     console.log("Sent text to server")
@@ -52,7 +49,7 @@ function gettingInputData() {
             };
             reader.readAsArrayBuffer(file);
         } catch (error) {
-            logger.error("Error extracting text: ". error);
+            console.error("Error extracting text: ". error);
             uploadRawPdf(file);
         }
     }
@@ -65,7 +62,7 @@ function sendToServer(data) {
         body: JSON.stringify(data),
     }).then(response => response.json())
       .then(result => console.log("Server response:", result))
-      .catch(error => logger.error("Error sending text to server:", error ));
+      .catch(error => console.error("Error sending text to server:", error ));
 }
 
 function uploadRawPdf(data) {
@@ -73,11 +70,11 @@ function uploadRawPdf(data) {
     formData.append("file", data);
 
     fetch("/process-pdf", {
-        method: POST,
+        method: "POST",
         body: formData,
     }).then(response => response.json())
       .then(result => console.log("Server response:", result))
-      .catch(error => logger.error("Error uploading PDF to server", error));
+      .catch(error => console.error("Error uploading PDF to server", error));
 }
 
 function createScrapeHTML(textFromFile){
