@@ -56,11 +56,16 @@ function gettingInputData() {
 }
 
 function sendToServer(data) {
-    fetch("/process-text", {
+    fetch("http://localhost:3000/process-text", {
         method: "POST",
         headers: {"Content-Type" : "application/json"},
         body: JSON.stringify(data),
-    }).then(response => response.json())
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error,  status: ${response.status}`);
+        }
+        return response.json();
+    })
       .then(result => console.log("Server response:", result))
       .catch(error => console.error("Error sending text to server:", error ));
 }

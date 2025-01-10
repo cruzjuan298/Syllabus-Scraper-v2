@@ -1,11 +1,13 @@
 import express from "express"
 import logger from "./logger.js"
 import multer from "multer"
-import * as pdfjsLib from "pdfjs-dist";
+import cors from "cors"
+import * as pdfjsLib from "pdfjs-dist"
 
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
