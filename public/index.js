@@ -2,7 +2,6 @@ const responseContainer = document.getElementById("response-div");
 const scraperButton = document.getElementById("post");
 const fileInput = document.getElementById("file-input")
 
-let fileData = "";
 
 scraperButton.addEventListener("click", displayScraped)
 
@@ -20,7 +19,6 @@ function displayScraped(e){
         responseContainer.classList.add("visible");
     }
     gettingInputData();
-    createScrapeHTML(fileData);
 }
 
 function gettingInputData() {
@@ -66,19 +64,34 @@ function sendToServer(data) {
         }
         return response.json();
     })
-      .then(result => console.log("Server response:", result))
+      .then(result => {
+        console.log("Server Response:", result);
+        if (result.success) {
+            createScrapeHTML(result.scrapedText);
+        }
+      })
       .catch(error => console.error("Error sending text to server:", error ));
 }
 
 function uploadRawPdf(data) {
     const formData = new FormData();
-    formData.append("file", data);
+    formData.append("pdf", data);
 
-    fetch("/process-pdf", {
+    fetch("http://localhost:3000/process-pdf", {
         method: "POST",
         body: formData,
-    }).then(response => response.json())
-      .then(result => console.log("Server response:", result))
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error, status: ${response.status}`);
+        }
+        return response.json()
+    })
+      .then(result => {
+        console.log("Server Response:", result);
+        if (result.success) {
+            createScrapeHTML(result.analyzedData);
+        }
+      })
       .catch(error => console.error("Error uploading PDF to server", error));
 }
 

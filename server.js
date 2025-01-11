@@ -3,6 +3,8 @@ import logger from "./logger.js"
 import multer from "multer"
 import cors from "cors"
 import * as pdfjsLib from "pdfjs-dist"
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import dotenv from "dotenv"
 
 const app = express();
 const port = 3000;
@@ -12,11 +14,24 @@ app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.post("/process-text", (req, res) => {
+dotenv.config();
+
+const apiKey = process.env.API_KEY;
+
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+let prompt = "";
+
+app.post("/process-text", async (req, res) => {
     const { text } = req.body;
 
+    prompt = `You are an expert large language model that can detect important dates for exams, quizes, deadlines or anything else that may be of relevance of being due at a certain date. You will output data in this format: Date - Activity. For example, an exam on october 12 should be: October 12 - Exam. From this text, what are important deadlines or dates?: ${text}`;
+    
+    const result = await model.generateContent(prompt);
+    const scrapedData = result.response.text();
+
     console.log("Recieved text:", text);
-    res.json({ success: true, message: "Text processed succesfully"})
+    res.json({ success: true, message: "Text processed succesfully", scrapedText: scrapedData});
 })
 
 app.post("/process-pdf", upload.single("pdf"), async (req, res) => {
@@ -29,29 +44,42 @@ app.post("/process-pdf", upload.single("pdf"), async (req, res) => {
     console.log("Recieved PDF file:", pdfFile.originalname);
 
     try {
-        const pdfDocument = await pdfjsLib.getDocument({ data: pdfFile.buffer}).promise;
+        const uint8Array = new Uint8Array(pdfFile.buffer);
+        const pdfDocument = await pdfjsLib.getDocument({ data: uint8Array}).promise;
 
         let extractedText = "";
 
-        for(let i = 0; i < pdfDocument.numPages; i++) {
-            const page = await pdfDocument.getPage(i);
-            const textContent = await page.getTextContent();
+        const numPages = pdfDocument.numPages;
 
-            textContent.items.forEach(item => {
-                extractedText  += item.str + " ";
-            });
+        for (let i = 0; i < numPages; i++){
+            try {
+                const page = await pdfDocument.getPage(i + 1);
+                const textContent = await page.getTextContent();
+
+                textContent.items.forEach(item => {
+                    extractedText += item.str + " ";
+                });
+            } catch (pageError) {
+                logger.error(`Error processing page ${i + 1}`, pageError);
+            }
         }
 
         console.log("Extracted Text from PDF", extractedText);
+
+        const prompt = `You are an expert large language model that can detect important dates for exams, quizzes, deadlines, or anything else of relevance being due at a certain date. You will output data in this format: Date - Activity. For example, an exam on October 12 should be: October 12 - Exam. From this text, what are important deadlines or dates?: ${extractedText}`;
+
+        const result = await model.generateContent(prompt);
+        const scrapedData = result.response.text();
 
         res.json({
             success: true,
             message: "PDF processed successfully",
             extractedText: extractedText,
+            analyzedData: scrapedData,
         });
     } catch (error) {
         logger.error("Error parsing PDF: ", error);
-        res.status(500).json({ error: "Failed to process PDF"});
+        res.status(500).json({ error: "Failed to process PDF", details: error.message});
     }
 });
 
