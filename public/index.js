@@ -100,10 +100,28 @@ function createScrapeHTML(textFromFile){
     h1Element.id = "response-h1";
     h1Element.textContent = "Scraped Text:";
 
-    const responseH2 = document.createElement("h2");
-    responseH2.id = "response-h1";
-    responseH2.textContent = textFromFile;
-
     responseContainer.appendChild(h1Element);
-    responseContainer.appendChild(responseH2);
+
+    const lines = textFromFile.split("\n").filter(line => line.trim() !== "");
+
+    lines.forEach(line => {
+        const lineDiv = document.createElement("div");
+        lineDiv.className = "scraped-line";
+
+        const checkBox = document.createElement("input");
+        checkBox.type = "checkbox";
+        checkBox.className = "line-checkbox";
+
+        const textInput = document.createElement("input");
+        textInput.type = "text";
+        textInput.className = "line-text";
+        textInput.value = line;
+        
+        lineDiv.appendChild(checkBox);
+        lineDiv.appendChild(textInput);
+
+        responseContainer.appendChild(lineDiv);
+        
+    })
+
 }
