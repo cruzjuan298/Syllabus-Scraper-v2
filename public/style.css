@@ -5,7 +5,7 @@ body {
     background-color: rgb(240, 240, 240);
 }
 
-#form-container, #response-div {
+#form-container, #response-div{
     text-align: center;
     height: 200px;
     font-size: 12px;
@@ -36,4 +36,11 @@ body {
 
 .hidden {
     display: none;
+}
+
+#add-lines-button, #add-button {
+    font-size: 16px;
+    padding: 5px 10px;
+    border-radius: 8px;
+
 }

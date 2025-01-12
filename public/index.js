@@ -124,4 +124,14 @@ function createScrapeHTML(textFromFile){
         
     })
 
+    const addButton = document.createElement("button");
+    addButton.id = "add-button";
+    addButton.innerHTML = "add-button"
+    const addLine = document.createElement("Input");
+    addLine.id = "add-lines-button";
+
+    responseContainer.appendChild(addButton);
+    
+    responseContainer.appendChild(addLine);
+
 }
