@@ -6,6 +6,7 @@ import * as pdfjsLib from "pdfjs-dist"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import dotenv from "dotenv"
 
+const mock = true;
 const app = express();
 const port = 3000;
 
@@ -20,15 +21,27 @@ const apiKey = process.env.API_KEY;
 
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-let prompt = "";
+let prompt;
+let result;
 
 app.post("/process-text", async (req, res) => {
     const { text } = req.body;
 
     prompt = `You are an expert large language model that can detect important dates for exams, quizes, deadlines or anything else that may be of relevance of being due at a certain date. You will output data in this format: Date - Activity. For example, an exam on october 12 should be: October 12 - Exam. From this text, what are important deadlines or dates?: ${text}`;
-    
-    const result = await model.generateContent(prompt);
-    const scrapedData = result.response.text();
+
+    if (mock) {
+        result = {
+            response : {
+                text : () => Promise.reolve("October 13: Exam"),
+            },
+        };
+    } else result = await model.generateContent(prompt);
+
+    let scrapedData;
+
+    if (result &&  result.response) {
+        scrapedData = await result.response.text();
+    } else scrapedData = "Error retrieving data";
 
     console.log("Recieved text:", text);
     res.json({ success: true, message: "Text processed succesfully", scrapedText: scrapedData});
@@ -68,8 +81,19 @@ app.post("/process-pdf", upload.single("pdf"), async (req, res) => {
 
         const prompt = `You are an expert large language model that can detect important dates for exams, quizzes, deadlines, or anything else of relevance being due at a certain date. You will output data in this format: Date - Activity. For example, an exam on October 12 should be: October 12 - Exam. From this text, what are important deadlines or dates?: ${extractedText}`;
 
-        const result = await model.generateContent(prompt);
-        const scrapedData = result.response.text();
+        if (mock) {
+            result = {
+                response: {
+                    text: () => Promise.resolve("October 22nd: Exam"),
+                },
+            };
+        } else result = await model.generateContent(prompt);
+
+        let scrapedData;
+
+        if (result && result.response) {
+             scrapedData = await result.response.text();
+        } else scrapedData = "Error scraping data";
 
         res.json({
             success: true,

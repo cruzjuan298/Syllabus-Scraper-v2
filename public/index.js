@@ -1,7 +1,7 @@
 const responseContainer = document.getElementById("response-div");
 const scraperButton = document.getElementById("post");
 const fileInput = document.getElementById("file-input")
-
+const addLineButton = document.getElementById("add-button");
 
 scraperButton.addEventListener("click", displayScraped)
 
@@ -101,28 +101,42 @@ function createScrapeHTML(textFromFile){
     h1Element.textContent = "Scraped Text:";
 
     responseContainer.appendChild(h1Element);
+    const divElement = document.createElement("div");
+    const inputElement1 = document.createElement("input");
+    const inputElement2 = document.createElement("input");
 
+    try {
     const lines = textFromFile.split("\n").filter(line => line.trim() !== "");
 
     lines.forEach(line => {
-        const lineDiv = document.createElement("div");
-        lineDiv.className = "scraped-line";
+        divElement.className = "scraped-line";
 
-        const checkBox = document.createElement("input");
-        checkBox.type = "checkbox";
-        checkBox.className = "line-checkbox";
+        inputElement1.type = "checkbox";
+        inputElement1.className = "line-checkbox";
 
-        const textInput = document.createElement("input");
-        textInput.type = "text";
-        textInput.className = "line-text";
-        textInput.value = line;
+        inputElement2.type = "text";
+        inputElement2.className = "line-text";
+        inputElement2.value = line;
         
-        lineDiv.appendChild(checkBox);
-        lineDiv.appendChild(textInput);
+        divElement.appendChild(inputElement1);
+        divElement.appendChild(inputElement2);
 
-        responseContainer.appendChild(lineDiv);
+        responseContainer.appendChild(divElement);
         
     })
+    } catch (error) {
+        console.log(error);
+
+        divElement.className = "scraped-line"
+
+        inputElement1.type = "text";
+        inputElement1.className = "line-text";
+        inputElement1.value = "No valid dates found";
+        
+        divElement.appendChild(inputElement1);
+
+        responseContainer.appendChild(divElement);
+    }
 
     const addButton = document.createElement("button");
     addButton.id = "add-button";
