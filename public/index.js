@@ -3,7 +3,17 @@ const scraperButton = document.getElementById("post");
 const fileInput = document.getElementById("file-input")
 const addLineButton = document.getElementById("add-button");
 
-scraperButton.addEventListener("click", displayScraped)
+document.body.addEventListener("click", (event) => {
+    if (event.target.id === "post") {
+        displayScraped(event)
+    }
+
+    if (event.target.id === "add-button"){
+    const newLineInput = document.getElementById("add-lines-button");
+    const newLineInputValue = newLineInput.value;
+    createNewLineHTML(newLineInputValue);
+    }
+})
 
 //reseting input value when page is refreshed
 window.addEventListener("load", () => {
@@ -138,14 +148,38 @@ function createScrapeHTML(textFromFile){
         responseContainer.appendChild(divElement);
     }
 
+    const newLineDiv = document.createElement("div");
+    newLineDiv.id = "new-line-div";
+
     const addButton = document.createElement("button");
     addButton.id = "add-button";
     addButton.innerHTML = "add-button"
     const addLine = document.createElement("Input");
     addLine.id = "add-lines-button";
 
-    responseContainer.appendChild(addButton);
-    
-    responseContainer.appendChild(addLine);
+    newLineDiv.appendChild(addButton);
+    newLineDiv.appendChild(addLine);
 
+    responseContainer.appendChild(newLineDiv);
+
+}
+
+function createNewLineHTML(textFromInput) {
+    const addLineDiv = document.getElementById("new-line-div");
+
+    const divElement = document.createElement("div");
+    divElement.className = "div-new-line"
+
+    const inputElement1 = document.createElement("input");
+    inputElement1.type = "checkbox";
+    inputElement1.className = "new-line-checkbox";
+
+    const inputElement2 = document.createElement("input")
+    inputElement2.type = "text";
+    inputElement2.className = "line-text";
+    inputElement2.value = textFromInput;
+
+    divElement.appendChild(inputElement1);
+    divElement.appendChild(inputElement2);
+    responseContainer.insertBefore(divElement, addLineDiv)
 }
